@@ -4,6 +4,7 @@ Base implementation of the MTN API client
 @author: Moses Mugisha
 """
 import json
+
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
@@ -14,7 +15,6 @@ from requests import Request, Session
 from requests._internal_utils import to_native_string
 from requests.auth import AuthBase
 from requests.auth import HTTPBasicAuth
-
 
 from .config import MomoConfig
 from .errors import APIError
@@ -34,7 +34,6 @@ class MoMoAuth(AuthBase):
     """Attaches Authentication to the given Request object."""
 
     def __init__(self, token):
-
         self.token = token
 
     def __call__(self, r):
@@ -69,9 +68,9 @@ class Client(ClientInterface):
 class MomoApi(ClientInterface, object):
 
     def __init__(
-            self,
-            config,
-            ** kwargs):
+        self,
+        config,
+        **kwargs):
         super(MomoApi, self).__init__(**kwargs)
         self._session = Session()
         self._config = MomoConfig(config)
@@ -104,11 +103,13 @@ class MomoApi(ClientInterface, object):
         try:
             rbody = resp.json()
         except JSONDecodeError:
-            rbody = resp.text
+            # rbody = resp.text
+            rbody = resp
             resp = Response(rbody, rcode, rheaders)
 
         if not (200 <= rcode < 300):
-            self.handle_error_response(rbody, rcode, resp.text, rheaders)
+            # self.handle_error_response(rbody, rcode, resp.text, rheaders)
+            self.handle_error_response(rbody, rcode, resp, rheaders)
 
         return resp
 
@@ -151,11 +152,11 @@ class MomoApi(ClientInterface, object):
         return res.json()
 
     def getTransactionStatus(
-            self,
-            transaction_id,
-            url,
-            subscription_key,
-            ** kwargs):
+        self,
+        transaction_id,
+        url,
+        subscription_key,
+        **kwargs):
 
         headers = {
             "X-Target-Environment": self.config.environment,
@@ -169,13 +170,13 @@ class MomoApi(ClientInterface, object):
 
     @classmethod
     def generateToken(
-            cls,
-            host,
-            api_user,
-            api_key,
-            base_url,
-            environment="sandbox",
-            **kwargs):
+        cls,
+        host,
+        api_user,
+        api_key,
+        base_url,
+        environment="sandbox",
+        **kwargs):
         data = {"providerCallbackHost": host}
 
         headers = {
